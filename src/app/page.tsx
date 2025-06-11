@@ -26,9 +26,10 @@ const generateId = (): string => {
   });
 };
 
+const EMPTY_MESSAGES: Message[] = [];
 
 export default function HomePage() {
-  const [messages, setMessages] = useLocalStorage<Message[]>('chatHistory', []);
+  const [messages, setMessages] = useLocalStorage<Message[]>('chatHistory', EMPTY_MESSAGES);
   const [isLoading, setIsLoading] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const { toast } = useToast();
@@ -90,7 +91,7 @@ export default function HomePage() {
        console.info("Gemini Chat Local: Ensure your GOOGLE_API_KEY is set in .env.local. Open settings for instructions.");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [messages]); // Added messages to dependency array, console.info is safe.
 
 
   return (

@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 
-type SetValue<T> = (value: T | ((val: T) => T)) => void;
+export type SetValue<T> = (value: T | ((val: T) => T)) => void;
 
 function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
   const readValue = useCallback((): T => {
@@ -27,7 +27,7 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
     }
   }, [initialValue, key]);
 
-  const [storedValue, setStoredValue] = useState<T>(readValue);
+  const [storedValue, setStoredValue] = useState<T>(() => readValue());
 
   const setValue: SetValue<T> = useCallback(value => {
     if (typeof window === 'undefined') {
@@ -46,17 +46,18 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
     }
   }, [key, storedValue]);
   
-  // This useEffect was causing an infinite loop if `readValue` was unstable
-  // due to an unstable `initialValue` (e.g. `[]`).
-  // The initial value is already set by `useState(readValue)`.
-  // useEffect(() => {
-  //   setStoredValue(readValue());
-  // }, [readValue]);
 
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === key || event.key === null) { // event.key is null for localStorage.clear()
-        setStoredValue(readValue());
+        setStoredValue(currentStoredValue => {
+          const newValueFromStorage = readValue();
+          // Only update if the new value from storage is actually different from the current state
+          if (JSON.stringify(newValueFromStorage) !== JSON.stringify(currentStoredValue)) {
+            return newValueFromStorage;
+          }
+          return currentStoredValue; // No change, prevents re-render if data is identical
+        });
       }
     };
     
@@ -67,7 +68,7 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('local-storage', handleStorageChange as EventListener);
     };
-  }, [key, readValue]);
+  }, [key, readValue]); // readValue is stable if initialValue is stable
 
   return [storedValue, setValue];
 }
