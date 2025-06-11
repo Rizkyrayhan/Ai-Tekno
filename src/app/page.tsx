@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { AppHeader } from '@/components/layout/header';
 import { ChatView } from '@/components/chat/chat-view';
 import { ChatInput } from '@/components/chat/chat-input';
@@ -63,17 +64,28 @@ export default function HomePage() {
     }
   };
 
+  const clearChat = useCallback(() => {
+    setMessages(EMPTY_MESSAGES);
+    toast({
+      title: "Chat Cleared",
+      description: "Your chat history has been cleared.",
+    });
+  }, [setMessages, toast]);
+
   useEffect(() => {
     const apiKeyHintDismissed = localStorage.getItem('apiKeyHintDismissed');
     if (messages.length === 0 && !apiKeyHintDismissed) {
-       console.info("Gemini Chat Local: Ensure your GOOGLE_API_KEY is set in .env.local. Open settings for instructions.");
+       console.info("Chat with Mbah Tekno: Ensure your GOOGLE_API_KEY is set in .env.local. Open settings for instructions.");
     }
   }, [messages]);
 
 
   return (
     <div className="flex flex-col h-screen bg-background">
-      <AppHeader onSettingsClick={() => setIsSettingsOpen(true)} />
+      <AppHeader 
+        onSettingsClick={() => setIsSettingsOpen(true)} 
+        onClearChat={clearChat} 
+      />
       <main className="flex-grow flex flex-col overflow-hidden">
         {hasHydrated ? (
           <ChatView messages={messages} isLoadingAiResponse={isLoading} />

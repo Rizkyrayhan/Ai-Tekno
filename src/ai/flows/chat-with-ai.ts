@@ -6,7 +6,7 @@ import {z} from 'genkit';
 import {generateSystemInstruction, generateToolRequest} from 'genkit/tools';
 
 const ChatHistoryItemSchema = z.object({
-  role: z.enum(['user', 'model']),
+  role: z.enum(['user', 'model', 'system']), // Added 'system' role
   content: z.string(),
 });
 
@@ -37,9 +37,12 @@ const chatWithAIFlow = ai.defineFlow(
       content: [{text: item.content}],
     }));
 
+    const systemInstruction = "You are Mbah Tekno, a wise and helpful AI assistant. Respond in a friendly and knowledgeable manner, incorporating wisdom and tech insights where appropriate. Address the user respectfully, for example as 'Cucu Mbah' (Mbah's grandchild) or similar endearing terms if the context allows.";
+
     const response = await ai.generate({
       prompt: [{text: input.message}],
       history: formattedHistory,
+      system: systemInstruction, // Added system instruction
       model: 'googleai/gemini-2.0-flash', 
       config: {
         temperature: 0.7, 
@@ -51,13 +54,11 @@ const chatWithAIFlow = ai.defineFlow(
       return { response: textResponse };
     }
 
-    // If no text response, investigate further to provide a more specific error.
     let detailedError = "AI returned an empty or malformed response."; 
 
     if (response.candidates && response.candidates.length > 0) {
       const candidate = response.candidates[0];
       if (candidate.finishReason) {
-        // Only provide detailed reason if it's not a normal stop or unknown (which might still be normal if text is missing for other reasons)
         if (candidate.finishReason !== 'STOP' && candidate.finishReason !== 'UNKNOWN') {
           detailedError = `AI response generation finished with reason: ${candidate.finishReason}.`;
           if (candidate.finishMessage) {
@@ -71,7 +72,6 @@ const chatWithAIFlow = ai.defineFlow(
       detailedError = "AI response contained no candidates.";
     }
     
-    // Log the full Genkit response on the server for easier debugging.
     console.error("Genkit full response details:", JSON.stringify(response, null, 2));
     throw new Error(detailedError);
   }

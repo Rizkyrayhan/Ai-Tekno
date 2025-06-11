@@ -1,10 +1,11 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'Gemini Chat Local',
-  description: 'Chat with Gemini AI locally.',
+  title: 'Chat with Mbah Tekno',
+  description: 'Chat with Mbah Tekno, your friendly AI assistant.',
 };
 
 export default function RootLayout({
