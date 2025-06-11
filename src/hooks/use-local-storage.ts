@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
@@ -45,9 +46,12 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
     }
   }, [key, storedValue]);
   
-  useEffect(() => {
-    setStoredValue(readValue());
-  }, [readValue]);
+  // This useEffect was causing an infinite loop if `readValue` was unstable
+  // due to an unstable `initialValue` (e.g. `[]`).
+  // The initial value is already set by `useState(readValue)`.
+  // useEffect(() => {
+  //   setStoredValue(readValue());
+  // }, [readValue]);
 
   useEffect(() => {
     const handleStorageChange = (event: StorageEvent) => {
