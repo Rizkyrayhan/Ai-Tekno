@@ -5,7 +5,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { AppHeader } from '@/components/layout/header';
 import { ChatView } from '@/components/chat/chat-view';
 import { ChatInput } from '@/components/chat/chat-input';
-import { SettingsDialog } from '@/components/settings/settings-dialog';
 import useLocalStorage from '@/hooks/use-local-storage';
 import type { Message } from '@/types';
 import { handleUserMessage } from '@/lib/actions';
@@ -18,7 +17,6 @@ const EMPTY_MESSAGES: Message[] = [];
 export default function HomePage() {
   const [messages, setMessages] = useLocalStorage<Message[]>('chatHistory', EMPTY_MESSAGES);
   const [isLoading, setIsLoading] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [hasHydrated, setHasHydrated] = useState(false);
   const { toast } = useToast();
 
@@ -55,7 +53,7 @@ export default function HomePage() {
       const errorMessage: Message = {
         id: uuidv4(),
         role: 'model',
-        content: 'Sorry, I could not process your request. Please check your API key configuration in settings or try again later.',
+        content: 'Sorry, I could not process your request. Please check your API key configuration or try again later.',
         timestamp: new Date(),
       };
       setMessages((prevMessages) => [...prevMessages, errorMessage]);
@@ -72,18 +70,9 @@ export default function HomePage() {
     });
   }, [setMessages, toast]);
 
-  useEffect(() => {
-    const apiKeyHintDismissed = localStorage.getItem('apiKeyHintDismissed');
-    if (messages.length === 0 && !apiKeyHintDismissed) {
-       console.info("Chat with Mbah Tekno: Ensure your GOOGLE_API_KEY is set in .env.local. Open settings for instructions.");
-    }
-  }, [messages]);
-
-
   return (
     <div className="flex flex-col h-screen bg-background">
       <AppHeader 
-        onSettingsClick={() => setIsSettingsOpen(true)} 
         onClearChat={clearChat} 
       />
       <main className="flex-grow flex flex-col overflow-hidden">
@@ -101,7 +90,6 @@ export default function HomePage() {
         )}
       </main>
       <ChatInput onSendMessage={onSendMessage} isLoading={isLoading || !hasHydrated} />
-      <SettingsDialog isOpen={isSettingsOpen} onOpenChange={setIsSettingsOpen} />
     </div>
   );
 }

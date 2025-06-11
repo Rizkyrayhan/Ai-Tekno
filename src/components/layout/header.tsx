@@ -2,7 +2,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Settings, MessageSquareText, Trash2 } from 'lucide-react';
+import { MessageSquareText, Trash2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,11 +16,10 @@ import {
 } from "@/components/ui/alert-dialog"
 
 interface AppHeaderProps {
-  onSettingsClick: () => void;
   onClearChat: () => void;
 }
 
-export function AppHeader({ onSettingsClick, onClearChat }: AppHeaderProps) {
+export function AppHeader({ onClearChat }: AppHeaderProps) {
   return (
     <header className="bg-primary text-primary-foreground p-4 shadow-md flex justify-between items-center sticky top-0 z-50">
       <div className="flex items-center">
@@ -49,9 +48,6 @@ export function AppHeader({ onSettingsClick, onClearChat }: AppHeaderProps) {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-        <Button variant="ghost" size="icon" onClick={onSettingsClick} aria-label="Settings">
-          <Settings className="h-5 w-5 text-primary-foreground" />
-        </Button>
       </div>
     </header>
   );
