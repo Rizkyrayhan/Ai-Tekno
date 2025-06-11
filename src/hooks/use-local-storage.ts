@@ -14,7 +14,6 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
       const item = window.localStorage.getItem(key);
       if (item) {
         const parsed = JSON.parse(item);
-        // Ensure timestamps are properly rehydrated as Date objects
         if (Array.isArray(parsed)) {
           return parsed.map(msg => msg.timestamp ? {...msg, timestamp: new Date(msg.timestamp)} : msg) as T;
         }
@@ -40,7 +39,9 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
       const newValue = value instanceof Function ? value(storedValue) : value;
       window.localStorage.setItem(key, JSON.stringify(newValue));
       setStoredValue(newValue);
-      window.dispatchEvent(new StorageEvent('local-storage', { key }));
+      // Removed: window.dispatchEvent(new StorageEvent('local-storage', { key }));
+      // Standard 'storage' event will notify other tabs/windows.
+      // This instance has already updated its state with setStoredValue(newValue).
     } catch (error) {
       console.warn(`Error setting localStorage key “${key}”:`, error);
     }
@@ -48,27 +49,33 @@ function useLocalStorage<T>(key: string, initialValue: T): [T, SetValue<T>] {
   
 
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    // Listen for changes from other tabs/windows
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === key || event.key === null) { // event.key is null for localStorage.clear()
         setStoredValue(currentStoredValue => {
           const newValueFromStorage = readValue();
-          // Only update if the new value from storage is actually different from the current state
+          // Compare to prevent re-render if data is identical.
+          // This is important as 'storage' event can fire even for no-op changes from other tabs.
           if (JSON.stringify(newValueFromStorage) !== JSON.stringify(currentStoredValue)) {
             return newValueFromStorage;
           }
-          return currentStoredValue; // No change, prevents re-render if data is identical
+          return currentStoredValue;
         });
       }
     };
     
     window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('local-storage', handleStorageChange as EventListener);
+    // Removed listener for 'local-storage' custom event
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('local-storage', handleStorageChange as EventListener);
+      // Removed listener for 'local-storage' custom event
     };
-  }, [key, readValue]); // readValue is stable if initialValue is stable
+  }, [key, readValue]); // readValue is stable if initialValue and key are stable
 
   return [storedValue, setValue];
 }
