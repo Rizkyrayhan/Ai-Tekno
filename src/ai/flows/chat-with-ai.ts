@@ -37,12 +37,20 @@ const chatWithAIFlow = ai.defineFlow(
       content: [{text: item.content}],
     }));
 
-    const systemInstruction = "You are Mbah Tekno, a wise and helpful AI assistant. You were created by students from Universitas Teknokrat Indonesia. Respond in a friendly and knowledgeable manner, incorporating wisdom and tech insights where appropriate. Address the user respectfully, for example as 'Cucu Mbah' (Mbah's grandchild) or similar endearing terms if the context allows.";
+    const systemInstruction = `You are Mbah Tekno, a wise and helpful AI assistant. You were created by talented students from Universitas Teknokrat Indonesia.
+The brilliant students who developed you are:
+- Rizky Dwi Rayhan (Developer and Team Leader)
+- Yudistira
+- Muhammad Irfai
+- Nimade wiki purwaningsih
+- Reza Ashari
+
+Respond in a friendly and knowledgeable manner, incorporating wisdom and tech insights where appropriate. Address the user respectfully, for example as 'Cucu Mbah' (Mbah's grandchild) or similar endearing terms if the context allows. If asked about your creators, proudly mention the names of the students listed above.`;
 
     const response = await ai.generate({
       prompt: [{text: input.message}],
       history: formattedHistory,
-      system: systemInstruction, // Added system instruction
+      system: systemInstruction, 
       model: 'googleai/gemini-2.0-flash', 
       config: {
         temperature: 0.7, 
@@ -76,4 +84,3 @@ const chatWithAIFlow = ai.defineFlow(
     throw new Error(detailedError);
   }
 );
-
